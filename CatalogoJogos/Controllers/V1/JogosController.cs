@@ -22,16 +22,6 @@ namespace CatalogoJogos.Controllers.V1
             _ijogoservice = ijogoservice;
         }
 
-        /// <summary>
-        /// Buscar todos os jogos de forma paginada
-        /// </summary>
-        /// <remarks>
-        /// Não é possível retornar os jogos sem paginação
-        /// </remarks>
-        /// <param name="pagina">Indica qual página está sendo consultada. Mínimo 1</param>
-        /// <param name="quantidade">Indica a quantidade de reistros por página. Mínimo 1 e máximo 50</param>
-        /// <response code="200">Retorna a lista de jogos</response>
-        /// <response code="204">Caso não haja jogos</response>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<JogoViewModel>>> Obter([FromQuery, Range(1, int.MaxValue)] int pagina = 1, [FromQuery, Range(1, 50)] int quantidade = 5)
         {
@@ -71,25 +61,31 @@ namespace CatalogoJogos.Controllers.V1
         [HttpPut("{idjogo:guid}")]
         public async Task<ActionResult<List<object>>> AtualizarJogo([FromRoute] Guid idJogo, [FromRoute] JogoInputModel jogo)
         {
-            try
+           try
             {
                 await _ijogoservice.Atualizar(idJogo, jogo);
 
+                return Ok();
             }
-            catch(Exception e)
+            catch (JogoNaoCadastradoException ex)
             {
-
-
-
+                return NotFound("Não existe este jogo");
             }
-
-            return Ok();
         }
 
-        [HttpPatch("{idjogo:guid/preco/{preco:double}")]
-        public async Task<ActionResult<List<object>>> AtualizarJogo(Guid idJogo, object preco)
+        [HttpPatch("{idJogo:guid}/preco/{preco:double}")]
+        public async Task<ActionResult<List<object>>> AtualizarJogo(Guid idJogo, double preco)
         {
-            return Ok();
+            try
+            {
+                await _ijogoservice.Atualizar(idJogo, preco);
+
+                return Ok();
+            }
+            catch (JogoNaoCadastradoException ex)
+            {
+                return NotFound("Não existe este jogo");
+            }
         }
 
         [HttpDelete("{idjogo:guid}")]
@@ -106,8 +102,6 @@ namespace CatalogoJogos.Controllers.V1
                 return NotFound("Não existe este jogo" + ex);
             }
         }
-
-
     }
 }
 
